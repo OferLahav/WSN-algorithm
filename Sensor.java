@@ -4,35 +4,40 @@ import java.util.TimerTask;
 
 public class Sensor implements Runnable
 {
-	double probON = 1/LENGTH;
-	double probPASS = 1.5/LENGTH;
-	double probOFF = (LENGTH-(probON+probPASS))/LENGTH;
 	static int ObjectCounter = 0;
 	static int LENGTH = 100;
-	double tim = (.8/((probON*.0165)+(probPASS*.0165)+(probOFF*.00006)))*1000;//2000; // 2 seconds battery life span of each sensor
+	
+	/*
+	*	Calculation of the life span of a sensor based on 0.8 Joules
+	*/
+	double probON = 1/LENGTH;							//Probability of a sensor being in the ON state
+	double probPASS = 1.5/LENGTH;						//Probability of a sensor being in the PASSING state
+	double probOFF = (LENGTH-(probON+probPASS))/LENGTH;	//Probability of a sensor being in the OFF state
+	double tim = (.8/((probON*.0165)+(probPASS*.0165)+(probOFF*.00006)))*1000;
 	long lifeSpan = (long)tim;
-	int threadSleep=2; 
-	static int headCounter = 0;
-	long durationOn=0;
+	//end of life span calculation.
 	
-	int x, y;
-	boolean DirectionFlag = true;	// South\ North
-	boolean state = false;	// on\off
-	Sensor South,North,East,West;
+	int threadSleep=2; 									// Time between threads (in miliseconds)
+	static int headCounter = 0;							// Used to break up the algorithm into parts
+	long durationOn=0;									// measure of the ON state
 	
-	static long networkLifeSpan;
+	int x, y;											// Coordinates of the sensor
+	boolean DirectionFlag = true;						// South/North of the WAVE
+	boolean state = false;								// ON/OFF
+	Sensor South,North,East,West;						// Pointers for the neighbouring sensors
+	
+	static long networkLifeSpan;						
 	static boolean endofitall = false;
 	public boolean isHead = false;
 	static int previousX;
 	public boolean isDead = false;
+	
 	DetectableObjList obj1 = new DetectableObjList();
 	CopyOnWriteArrayList <DetectableObject> objectList =  obj1.getDetectableObjList();
-	
 	
 	private Thread t;
 	
 	public long getNetworkLifeSpan(){
-		//networkLifeSpan = (System.currentTimeMillis() - networkLifeSpan)/1000;
 		return (System.currentTimeMillis() - networkLifeSpan)/1000;
 	}
 	
@@ -45,7 +50,7 @@ public class Sensor implements Runnable
 		East = E;
 		South = S;
 		West = W;
-		System.out.println("lifeSpan "+lifeSpan);
+		
 		networkLifeSpan = System.currentTimeMillis();
 	}
 	
@@ -103,23 +108,8 @@ public class Sensor implements Runnable
 		}
 		
 		
-		if( (state == false || DirectionFlag != direction) && (x != 999 && y!= 999))// if off & not a border or dead
+		if( (state == false || DirectionFlag != direction) && (x != 999 && y!= 999))// if OFF & not a border or dead
 		{
-			// if (isHead == true){
-				// Timer timer = new Timer();
-				// long start = System.currentTimeMillis();
-				// timer.schedule(new TimerTask(){
-					// @Override
-					// public void run() {
-						// long now = System.currentTimeMillis() - start;
-						// if (state == true && isHead == true && now > 2000 ){
-							// deactivate(direction);
-							// timer.cancel();
-							// timer.purge();	
-						// }	
-					// }		
-				// }, 0, 1);
-			// }
 			state = true; //on
 			
 			durationOn = System.currentTimeMillis();				
@@ -197,7 +187,6 @@ public class Sensor implements Runnable
 				}
 				
 				if(East.getX() == 999){  // if tail
-					//System.out.println(" manually deactivating : ( "+x+" "+y+" )");
 					state = false;	// shut off
 					
 				}
@@ -289,12 +278,6 @@ public class Sensor implements Runnable
 			isDead = true;
 			x=999;
 			y=999;
-			//if(endofitall == false){
-			//networkLifeSpan = (System.currentTimeMillis() - networkLifeSpan)/1000;
-				//System.out.println("The network lasted for : "+networkLifeSpan+" seconds .");
-				//endofitall = true;
-				//System.exit(0);
-			//}	
 		}
 	}
 	
@@ -331,25 +314,19 @@ public class Sensor implements Runnable
 		{
 			if (direction == true){ //going down
 				if (origin == "North"){
-						//system.out.println("trying to deactivate :"+ west.getx()+", "+west.gety()+"");
 						East.activate(direction);
 					}
 				if (origin == "West"){	
-						//system.out.println("trying to deactivate :"+ north.getx()+", "+north.gety()+"");
 						South.activate(direction);
 					}
 			}
 			else{ //going up
 				if (origin == "South"){
-						//system.out.println("trying to deactivate :"+ west.getx()+", "+west.gety()+"");
 						East.activate(direction);
 					}
 				if (origin == "West"){	
-						//system.out.println("trying to deactivate :"+ north.getx()+", "+north.gety()+"");
 						North.activate(direction);
 					}
-			
-			
 			}	
 		}
 		passDurationOn = System.currentTimeMillis() - passDurationOn;
@@ -358,22 +335,18 @@ public class Sensor implements Runnable
 	
 	public void designateHead(boolean direction){
 		if(West.getX()!= 999 && West.getX() != previousX){
-			//System.out.println("1 "+direction);
 			West.setHead(true);
 			West.activate(direction);
 		}	
 		else if (DirectionFlag == true && South.getX() != 999 ){
-			//System.out.println("2 "+direction);
 			South.setHead(true);
 			South.activate(direction);
 		}
 		else if (DirectionFlag == false && North.getX() != 999){
-			//System.out.println("3 "+direction);
 			North.setHead(true);
 			North.activate(direction);
 		}	
 		else if (East.getX() != 999){
-			//System.out.println("4 "+direction);
 			East.setHead(true);
 			East.activate(direction);
 		}	

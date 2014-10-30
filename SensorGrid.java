@@ -15,10 +15,7 @@ public class SensorGrid
 	static Sensor border = new Sensor(999,999); // Used to distinguish the ends of the grid
 	static Sensor [][] sensorGrid = new Sensor [LENGTH][LENGTH];
 	
-	static long networkLifeSpan;
-	
-
-	//static int counter = 0;
+	static long networkLifeSpan; // used to measure the life span of the network
 	
 	/*************Visual********/
 	static JFrame frame = new JFrame();
@@ -59,16 +56,12 @@ public class SensorGrid
 	}	
 
 	public void init(Sensor s){
-		/****** Check and set the corners  *****/
-		//System.out.println(" sensorNet.length: "+sensorNet.length+"    x : "+x+" y :"+y +"");
 		int x = s.getX();
 		int y = s.getY();
+		
 		if (x == 999) {s.setNeighbors(border,border,border,border);} // border points to itself.
 		
-		
-		//setNeighbors(Sensor N, Sensor E, Sensor S, Sensor W){
 		Sensor South,North,East,West;
-		/*the walls*/
 				
 			if ( (y - 1) >= 0 )					{North = sensorGrid[x][y-1];}
 			else{ North = sensorGrid[x][y+1];}	
@@ -86,13 +79,7 @@ public class SensorGrid
 	}
 	
 	public static int randInt(int min, int max) {
-
-    // NOTE: Usually this should be a field rather than a method
-    // variable so that it is not re-seeded every call.
     Random rand = new Random();
-
-    // nextInt is normally exclusive of the top value,
-    // so add 1 to make it inclusive
     int randomNum = rand.nextInt((max - min) + 1) + min;
 
     return randomNum;
@@ -138,7 +125,6 @@ public class SensorGrid
 				
 					for (DetectableObject obj : objectList){
 						if (j == obj.getOx() && i == obj.getOy()){
-							//obj.setDetected(true);
 							g.setColor(Color.ORANGE);
 							xc = i*squareSize;
 							yc = j*squareSize;
